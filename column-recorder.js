@@ -142,6 +142,13 @@ recRelease = (col) => {
       r.state = 'IDLE'
     }
   } else if (r.state === 'OVERDUB') {
+    // If you released without touching anything (tap, or hold-and-think-better-of-it),
+    // stop the loop entirely. Otherwise commit the overdubbed events and resume looping.
+    if (r.overdubTouched.size === 0) {
+      r.overdubTouched = null
+      stopLoop(col)   // sets state to IDLE and updates LED
+      return
+    }
     r.overdubTouched = null
     r.state = 'LOOPING'
   }
