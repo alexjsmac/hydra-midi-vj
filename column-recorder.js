@@ -170,8 +170,10 @@ observeCC = (cc, val) => {
     const loopT = (Date.now() - r.loopStart) % r.duration
     r.events.push({ t: loopT, cc, val })
   } else if (r.state === 'LOOPING') {
-    // User touched a column control while looping (without holding pad) — stop the loop.
-    stopLoop(col)
+    // Only stop the loop if the user is touching a control that's actually
+    // in the loop's events. Other column controls remain freely playable
+    // while the loop runs — useful for tweaking knobs that weren't recorded.
+    if (r.events.some(e => e.cc === cc)) stopLoop(col)
   }
 }
 

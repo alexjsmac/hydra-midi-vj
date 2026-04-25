@@ -36,7 +36,7 @@ await loadScript("https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main
 ## Controls
 
 - **Top pads (1–8)**: select scene
-- **Bottom pads (1–8)**: column recorders — press and hold to capture fader/knob movements in that column, release to loop. Tap or move any column control to stop. Hold again while looping to overdub. See [Column recorder](#column-recorder) below.
+- **Bottom pads (1–8)**: column recorders — press and hold to capture fader/knob movements in that column, release to loop. Tap to stop, or touch any recorded control to take it back. Untouched controls in the same column stay freely playable. Hold again while looping to overdub. See [Column recorder](#column-recorder) below.
 - **Side buttons (top→bottom)**: fade / freeze / invert / hush
 - **Faders**: speed, audio amount, feedback, zoom, R, G, B, master brightness
 - **Knobs (column N)**: per-scene warp / grit / rotation for scene N
