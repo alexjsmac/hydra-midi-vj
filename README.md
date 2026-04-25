@@ -16,8 +16,8 @@ Eight camel-themed scenes, audio-reactive to whatever the modular is sending, wi
 For the performance itself, host these files on GitHub raw and load them in one line:
 
 ```js
-await loadScript("https://raw.githubusercontent.com/alexjsmac/juice-jams-camel-show/main/camel-patch.js")
-await loadScript("https://raw.githubusercontent.com/alexjsmac/juice-jams-camel-show/main/led-feedback.js")
+await loadScript("https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/camel-patch.js")
+await loadScript("https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/led-feedback.js")
 ```
 
 ## Scenes
