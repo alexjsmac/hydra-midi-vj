@@ -44,7 +44,7 @@ CCs and pad notes verified against Factory Template 1 on this unit (see `cc-map.
 - Always wrap live-tweakable values in arrow functions: `osc(() => p.speed * 2)`, not `osc(p.speed * 2)`. Without the wrapper the value bakes in at chain-build time.
 - `a.fft[0..3]` are low / low-mid / high-mid / high bands. Needs audio input enabled via the mic icon in the Hydra UI.
 - Scene S3 (mirage) feeds on `src(o0)` — don't boot straight into it, it needs something to chew on.
-- S8 loads a photo via `s0.initImage(url)`. URL must be CORS-friendly. Wikimedia rate-limits hard — use GitHub raw or a custom host.
+- S8 loads a photo via `s0.initImage(url)`. URL must be CORS-friendly — `images/web/` in this repo is served via GitHub raw, which works. Hot-swap mid-set with `useCamel(n)` (1–5).
 - `a.setScale(fn)` is NOT reactive — Hydra stores the argument verbatim and divides by it, so passing a function makes `a.fft[N]` NaN. Always pass a fixed number. Route fader-driven audio sensitivity through a multiplier at each `a.fft` call site instead.
 - After many re-pastes, hydra.ojack.xyz sometimes stops evaluating reactive arrow functions (visuals render but look static). Hard reload (Cmd-Shift-R), re-grant mic + MIDI sysex, re-enable audio, re-paste. If `osc(() => (time * 10) % 60 + 5, 0.01, 1).out()` doesn't animate, the runtime is stuck — reload.
 - Scene functions are rebuilt on every `sN()` call and replace the previous chain on `o0`. When you edit a scene and re-paste `camel-patch.js`, the OLD chain keeps running on screen until you press that scene's pad again — this is the "zombie scene" trap.

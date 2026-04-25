@@ -87,8 +87,17 @@ fade   = () => solid(0.95, 0.65, 0.25).out(o0)
 freeze = () => src(o0).out(o0)
 invert = () => src(o0).invert().out(o0)
 
-// Reference photo for S8 — swap URL for your own (needs CORS)
-s0.initImage("https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/07._Camel_Profile%2C_near_Silverton%2C_NSW%2C_07.07.2007.jpg/800px-07._Camel_Profile%2C_near_Silverton%2C_NSW%2C_07.07.2007.jpg")
+// Reference photos for S8. Hosted from this repo to avoid Wikimedia
+// rate limits during a set. Hot-swap mid-performance with `useCamel(n)`.
+camels = [
+  "https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/images/web/camel-1.jpg",
+  "https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/images/web/camel-2.jpg",
+  "https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/images/web/camel-3.jpg",
+  "https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/images/web/camel-4.jpg",
+  "https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/images/web/camel-5.jpg",
+]
+useCamel = (n) => s0.initImage(camels[(n - 1) % camels.length])
+useCamel(1)
 
 
 // ============================================================
