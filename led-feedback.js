@@ -88,9 +88,10 @@ initLEDs = () => {
   for (let i = 0; i < 8; i++) {
     updates.push([SCENE_PADS[i], i === activeScene - 1 ? LED.AMBER_FULL : LED.OFF])
   }
-  // Utility pads: first 4 bound (red), last 4 dark
-  for (let i = 0; i < 4; i++) updates.push([UTIL_PADS[i], LED.RED_LOW])
-  for (let i = 4; i < 8; i++) updates.push([UTIL_PADS[i], LED.OFF])
+  // Bottom row pads are owned by column-recorder.js — leave OFF here so we
+  // don't fight with its state machine (idle = off, recording = red flash,
+  // looping = green, overdub = amber flash).
+  for (let i = 0; i < 8; i++) updates.push([UTIL_PADS[i], LED.OFF])
   setLEDs(updates)
 }
 

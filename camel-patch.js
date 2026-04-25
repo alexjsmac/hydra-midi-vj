@@ -27,7 +27,10 @@ navigator.requestMIDIAccess({ sysex: true }).then(access => {
   }
 })
 
-// Pad routing — top row switches scenes, bottom row is utility
+// Pad routing
+//   top row pads (41–44, 57–60)  → scene select s1..s8
+//   bottom row pads (73–76, 89–92) → column recorder (handled in column-recorder.js)
+//   side buttons (117–120)        → utilities
 function handlePad(n) {
   if (n === 41) s1()      // dunes
   if (n === 42) s2()      // caravan
@@ -37,10 +40,10 @@ function handlePad(n) {
   if (n === 58) s6()      // oasis
   if (n === 59) s7()      // stars
   if (n === 60) s8()      // archive
-  if (n === 73) fade()    // warm solid fade
-  if (n === 74) freeze()  // hold current frame
-  if (n === 75) invert()  // invert colours
-  if (n === 76) hush()    // kill all output
+  if (n === 117) fade()   // warm solid fade
+  if (n === 118) freeze() // hold current frame
+  if (n === 119) invert() // invert colours
+  if (n === 120) hush()   // kill all output
 }
 
 // Helper: m(cc, rawDefault 0–1, scale to real range)

@@ -31,18 +31,20 @@ Pads send Note On / Note Off, not CC.
 | Top    | F1 / **41**  | F#1 / **42**  | G1 / **43**   | G#1 / **44**  | A2 / **57**  | A#2 / **58**  | B2 / **59**   | C3 / **60**  |
 | Bottom | C#4 / **73** | D4 / **74**   | D#4 / **75**  | E4 / **76**   | F5 / **89**  | F#5 / **90**  | G5 / **91**   | G#5 / **92** |
 
-In the patch: top row selects scenes s1–s8; bottom row cols 1–4 run `fade / freeze / invert / hush`. Bottom cols 5–8 are currently unassigned.
+In the patch:
+- **Top row** selects scenes s1–s8.
+- **Bottom row** drives the column recorder (`column-recorder.js`) — pad N records the controls in column N.
 
 ## Side buttons (right column, 4 buttons)
 
-| Button | CC      | Note             |
-|--------|---------|------------------|
-| 1 (top)| CC 104  | A6 / **117**     |
-| 2      | CC 105  | A#6 / **118**    |
-| 3      | CC 106  | B6 / **119**     |
-| 4 (bot)| CC 107  | C7 / **120**     |
+| Button   | CC      | Note          | Function in patch |
+|----------|---------|---------------|-------------------|
+| 1 (top)  | CC 104  | A6 / **117**  | `fade()`          |
+| 2        | CC 105  | A#6 / **118** | `freeze()`        |
+| 3        | CC 106  | B6 / **119**  | `invert()`        |
+| 4 (bot)  | CC 107  | C7 / **120**  | `hush()`          |
 
-Not currently used by the patch.
+The CC stream from these buttons is unused (we only read Note On).
 
 ## LED feedback SysEx template
 

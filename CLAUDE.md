@@ -4,29 +4,34 @@ Live-coding patch for a VJ set at A/V Nights 2 (Forest City Gallery, London ON, 
 
 ## Files
 
-- `camel-patch.js` — 8 scenes + MIDI input handler + global expression params
+- `camel-patch.js` — 8 scenes + base MIDI input handler + global expression params
 - `midi-learn.js` — helper for discovering LCXL CC numbers (rehearsal only, not loaded at performance)
 - `led-feedback.js` — SysEx layer that lights the LCXL pads to reflect scene state
-- `cc-map.md` — (to create after running learn mode) the actual CCs this unit emits
+- `column-recorder.js` — per-column loop recorder driven by the bottom-row pads; replaces the MIDI input handler with one that intercepts CCs and pad notes for recording
+- `cc-map.md` — verified CC and pad-note map for this LCXL unit
+- `images/` — reference camel photos (originals + downsized `web/` versions served via GitHub raw)
 
 ## How it runs
 
 There's no build step. Files are pasted into https://hydra.ojack.xyz in order:
 
-1. `camel-patch.js` — defines scenes, sets up MIDI input, starts rendering
-2. `led-feedback.js` — wraps scene functions to add LED feedback
+1. `camel-patch.js` — defines scenes, sets up base MIDI input, starts rendering
+2. `led-feedback.js` — wraps scene functions to add LED feedback, exposes `setLED` / `LED` constants
+3. `column-recorder.js` — replaces the MIDI input handler with a recording-aware one
 
 Performance loading pattern: host on GitHub raw, then in Hydra run `await loadScript("https://raw.githubusercontent.com/.../camel-patch.js")` — one line pulls everything in.
 
 ## Architecture
 
-Three layers, loosely coupled:
+Four layers, loosely coupled:
 
 **Scene layer** (`camel-patch.js`): 8 named functions `s1()`..`s8()` — dunes, caravan, mirage, eye, sandstorm, oasis, stars, archive. Each is a Hydra chain ending in `.out(o0)`. Reactive params are wrapped in `() => ...` so Hydra re-evaluates them per frame.
 
-**MIDI input** (`camel-patch.js`): a single WebMIDI handler routes knob/fader CCs into a global `midi[cc]` map (0–1 normalized) and pad notes into `handlePad()`. Scenes read the map via `m(cc, default, scale)`, which returns a reactive function.
+**MIDI input** (`camel-patch.js`, then replaced by `column-recorder.js`): a single WebMIDI handler routes knob/fader CCs into a global `midi[cc]` map (0–1 normalized) and pad notes into `handlePad()`. Scenes read the map via `m(cc, default, scale)`, which returns a reactive function. `column-recorder.js` replaces the handler with a wider one that also dispatches to recorder hooks (`observeCC`, `recPress`, `recRelease`).
 
-**LED output** (`led-feedback.js`): SysEx to the LCXL pads. Wraps each scene function so invocation auto-updates pad state. Targets Factory Template 1 (`0x08`).
+**LED output** (`led-feedback.js`): SysEx to the LCXL pads. Wraps each scene function so invocation auto-updates pad state. Targets Factory Template 1 (`0x08`). Exposes `setLED`, `setLEDs`, `LED`, `SCENE_PADS`, `UTIL_PADS` for downstream use.
+
+**Column recorder** (`column-recorder.js`): bottom-row pads (notes 73–76, 89–92) are per-column loop recorders. Press-and-hold captures any column-aligned CC events; release loops them. Loop playback writes back into `midi[cc]` directly (not through the MIDI handler), so scenes pick it up reactively. Overdub mode (hold while looping) clears events for any control the user touches and replaces them. State machine: `IDLE → RECORDING → LOOPING → OVERDUB → LOOPING`.
 
 ## MIDI mapping convention
 
@@ -35,7 +40,8 @@ The LCXL has 8 columns, each with 3 knobs + 1 fader + 2 pads. Convention:
 - **Column N = Scene N.** Scene N reads its per-scene controls from column N's knobs (CCs `12+N`, `28+N`, `48+N` for warp / grit / rotation).
 - **Faders are global**, not scene-specific: speed, audio reactivity, feedback, zoom, R, G, B, brightness (CCs 77–84).
 - **Top row pads** (notes 41–44, 57–60 on channel 1) select scenes.
-- **Bottom row pads** (notes 73–76 on channel 1) trigger utilities: fade, freeze, invert, hush.
+- **Bottom row pads** (notes 73–76, 89–92 on channel 1) drive the column recorder — pad N records column N's controls.
+- **Side buttons** (notes 117–120 on channel 1) trigger utilities: fade, freeze, invert, hush.
 
 CCs and pad notes verified against Factory Template 1 on this unit (see `cc-map.md` if present). If you swap the controller or template, re-verify with `midi-learn.js` and update constants in both `camel-patch.js` and `led-feedback.js`.
 

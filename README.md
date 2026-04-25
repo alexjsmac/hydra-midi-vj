@@ -11,13 +11,15 @@ Eight camel-themed scenes, audio-reactive to whatever the modular is sending, wi
 3. Enable audio input (mic icon, top-right)
 4. Paste `camel-patch.js`, run it (`Ctrl+Shift+Enter`)
 5. Paste `led-feedback.js`, run it
-6. Press a top-row pad to switch scenes; tweak knobs and faders
+6. Paste `column-recorder.js`, run it
+7. Press a top-row pad to switch scenes; tweak knobs and faders
 
 For the performance itself, host these files on GitHub raw and load them in one line:
 
 ```js
 await loadScript("https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/camel-patch.js")
 await loadScript("https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/led-feedback.js")
+await loadScript("https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/column-recorder.js")
 ```
 
 ## Scenes
@@ -34,9 +36,23 @@ await loadScript("https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main
 ## Controls
 
 - **Top pads (1–8)**: select scene
-- **Bottom pads (1–4)**: fade / freeze / invert / hush
+- **Bottom pads (1–8)**: column recorders — press and hold to capture fader/knob movements in that column, release to loop. Tap or move any column control to stop. Hold again while looping to overdub. See [Column recorder](#column-recorder) below.
+- **Side buttons (top→bottom)**: fade / freeze / invert / hush
 - **Faders**: speed, audio amount, feedback, zoom, R, G, B, master brightness
 - **Knobs (column N)**: per-scene warp / grit / rotation for scene N
+
+## Column recorder
+
+Each bottom-row pad is a per-column recorder, aligned with the column directly above it (3 knobs + 1 fader). State machine:
+
+| Pad LED            | State     | What it means                                                                 |
+|--------------------|-----------|-------------------------------------------------------------------------------|
+| off                | idle      | nothing happening                                                              |
+| flashing red       | recording | pad held; CCs from this column's controls are being captured                  |
+| solid green        | looping   | recording is being replayed at the captured tempo                             |
+| flashing amber     | overdub   | pad held while looping; first touch of any control replaces its loop events   |
+
+Loop length equals how long you held the pad. There's no quantization — the loop runs at exactly your hold duration. To clear a loop without engaging a new one, just tap the pad and let it go without touching any controls. From the Hydra console, `recClear(n)` (1–8) and `recClearAll()` will also wipe loops.
 
 ## First-time CC discovery
 
