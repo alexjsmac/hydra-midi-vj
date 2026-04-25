@@ -1,7 +1,7 @@
 // ============================================================
-// LED FEEDBACK LAYER for the camel patch
+// LED FEEDBACK LAYER for the VJ patch
 //
-// Paste and run AFTER camel-patch.js is loaded. This turns the
+// Paste and run AFTER vj-patch.js is loaded. This turns the
 // LCXL pads into a live status display:
 //
 //   • Active scene pad glows amber (rest off)

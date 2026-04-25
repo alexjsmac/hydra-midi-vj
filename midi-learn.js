@@ -1,5 +1,5 @@
 // ============================================================
-// MIDI LEARN HELPER for the camel patch
+// MIDI LEARN HELPER for the VJ patch
 //
 // Paste this BELOW the existing MIDI setup block and run it.
 // It replaces the onmidimessage handler with a learn-aware one
@@ -13,7 +13,7 @@
 //   3. learnSummary()           — print the table of everything seen
 //   4. learn(false)             — stop learning (also runs summary)
 //
-// Then edit handlePad() and the m() calls in camel-patch.js to
+// Then edit handlePad() and the m() calls in vj-patch.js to
 // match the numbers you discovered.
 // ============================================================
 

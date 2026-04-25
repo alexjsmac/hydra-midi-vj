@@ -1,5 +1,5 @@
 // ============================================================
-// COLUMN RECORDER for the camel patch
+// COLUMN RECORDER for the VJ patch
 //
 // Press and hold a bottom-row pad to record movement of any
 // controls in that pad's column (3 knobs + 1 fader). Release to
@@ -10,7 +10,7 @@
 // existing loop events get cleared and your live movements
 // replace them. Untouched controls keep their loop intact.
 //
-// Paste and run AFTER both camel-patch.js and led-feedback.js
+// Paste and run AFTER both vj-patch.js and led-feedback.js
 // (uses midi[], handlePad, setLED, LED, UTIL_PADS from those).
 //
 // Pad → column mapping (bottom row of LCXL):
@@ -179,8 +179,8 @@ observeCC = (cc, val) => {
 
 
 // ---- MIDI handler -----------------------------------------
-// Replaces the camel-patch.js handler. We still do everything
-// camel-patch's version did (midi[cc] update + handlePad), plus
+// Replaces the vj-patch.js handler. We still do everything
+// vj-patch's version did (midi[cc] update + handlePad), plus
 // route to the recorder hooks.
 navigator.requestMIDIAccess({ sysex: true }).then(access => {
   for (let input of access.inputs.values()) {

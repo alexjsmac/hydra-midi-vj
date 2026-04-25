@@ -1,6 +1,5 @@
 // ============================================================
-// CAMEL PATCH — 8 scenes for Hydra + LaunchControl XL
-// For: live modular set, A/V Nights 2
+// VJ PATCH — 8 scenes for Hydra + LaunchControl XL
 //
 // Usage:
 //   1. Paste into https://hydra.ojack.xyz
@@ -90,17 +89,18 @@ fade   = () => solid(0.95, 0.65, 0.25).out(o0)
 freeze = () => src(o0).out(o0)
 invert = () => src(o0).invert().out(o0)
 
-// Reference photos for S8. Hosted from this repo to avoid Wikimedia
-// rate limits during a set. Hot-swap mid-performance with `useCamel(n)`.
-camels = [
+// Reference photos for S8. Hosted from this repo so the URLs are
+// stable and CORS-friendly. Hot-swap mid-performance with `useImage(n)`.
+// Replace these URLs with your own images for a different look.
+images = [
   "https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/images/web/camel-1.jpg",
   "https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/images/web/camel-2.jpg",
   "https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/images/web/camel-3.jpg",
   "https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/images/web/camel-4.jpg",
   "https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/images/web/camel-5.jpg",
 ]
-useCamel = (n) => s0.initImage(camels[(n - 1) % camels.length])
-useCamel(1)
+useImage = (n) => s0.initImage(images[(n - 1) % images.length])
+useImage(1)
 
 
 // ============================================================
@@ -111,7 +111,7 @@ useCamel(1)
 // So S1 = 13/29/49, S2 = 14/30/50, ... S8 = 20/36/56
 // ============================================================
 
-// S1 — DUNES: slow warm waves rolling across the horizon
+// S1 — WAVES: slow warm wave pattern
 s1 = () =>
   osc(spd, 0.03, 1)
     .modulate(noise(m(13, 0.5, 3), 0.1))
@@ -122,7 +122,7 @@ s1 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S2 — CARAVAN: silhouettes moving against heat shimmer
+// S2 — TILES: repeating dark shapes against a warm gradient
 s2 = () =>
   shape(3, 0.35, 0.02)
     .repeat(() => 3 + a.fft[1] * audio() * 4, 1)
@@ -134,7 +134,7 @@ s2 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S3 — MIRAGE: feedback + refraction, self-consuming image
+// S3 — FEEDBACK: self-consuming refraction, feeds on its own output
 s3 = () =>
   src(o0)
     .modulate(noise(m(15, 0.5, 6), 0.05), m(31, 0.3, 0.1))
@@ -144,7 +144,7 @@ s3 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S4 — EYE: macro camel iris, kaleidoscopic radial
+// S4 — KALEID: radial kaleidoscope, masked to a circle
 s4 = () =>
   osc(m(16, 0.4, 100), 0.1, 2)
     .kaleid(() => 4 + a.fft[0] * audio() * 3)
@@ -156,7 +156,7 @@ s4 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S5 — SANDSTORM: chaotic grit, low visibility
+// S5 — NOISE: chaotic grit, drifting
 s5 = () =>
   noise(m(17, 0.4, 20), m(33, 0.15, 2))
     .colorama(0.02)
@@ -167,7 +167,7 @@ s5 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S6 — OASIS: water reflection, kaleidoscopic mirror
+// S6 — MIRROR: cool kaleidoscopic mirror
 s6 = () =>
   osc(m(18, 0.4, 8), 0.05, 1)
     .kaleid(m(34, 0.3, 12))
@@ -178,7 +178,7 @@ s6 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S7 — STARS: desert night sky, slow drift
+// S7 — STARS: thresholded noise as point particles, slow drift
 s7 = () =>
   noise(m(19, 0.4, 200), 0.1)
     .thresh(() => 0.85 - a.fft[3] * audio() * 0.6)
@@ -188,7 +188,7 @@ s7 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S8 — ARCHIVE: the actual camel photo, treated and reactive
+// S8 — IMAGE: a reference photo from `images`, treated and reactive
 s8 = () =>
   src(s0)
     .modulate(noise(m(20, 0.3, 6), 0.1), m(36, 0.25, 0.2))

@@ -2,7 +2,7 @@
 
 Verified against this unit via Novation Components. All controls transmit on **channel 1**.
 
-Note names below are MIDI-standard (C-2 = 0, middle C = C3) as shown in Components; the decimal MIDI number is what [`camel-patch.js`](camel-patch.js) actually reads.
+Note names below are MIDI-standard (C-2 = 0, middle C = C3) as shown in Components; the decimal MIDI number is what [`vj-patch.js`](vj-patch.js) actually reads.
 
 ## Knobs (3 rows × 8 columns)
 
