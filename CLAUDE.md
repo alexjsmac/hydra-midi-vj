@@ -34,10 +34,10 @@ The LCXL has 8 columns, each with 3 knobs + 1 fader + 2 pads. Convention:
 
 - **Column N = Scene N.** Scene N reads its per-scene controls from column N's knobs (CCs `12+N`, `28+N`, `48+N` for warp / grit / rotation).
 - **Faders are global**, not scene-specific: speed, audio reactivity, feedback, zoom, R, G, B, brightness (CCs 77–84).
-- **Top row pads** (notes 41–44, 57–60 on channel 8) select scenes.
-- **Bottom row pads** (notes 73–76) trigger utilities: fade, freeze, invert, hush.
+- **Top row pads** (notes 41–44, 57–60 on channel 1) select scenes.
+- **Bottom row pads** (notes 73–76 on channel 1) trigger utilities: fade, freeze, invert, hush.
 
-CCs assume Factory Template 1 defaults. May differ on this unit — verify with `midi-learn.js`, update constants in both `camel-patch.js` and `led-feedback.js`.
+CCs and pad notes verified against Factory Template 1 on this unit (see `cc-map.md` if present). If you swap the controller or template, re-verify with `midi-learn.js` and update constants in both `camel-patch.js` and `led-feedback.js`.
 
 ## Hydra-specific notes
 
@@ -45,6 +45,9 @@ CCs assume Factory Template 1 defaults. May differ on this unit — verify with 
 - `a.fft[0..3]` are low / low-mid / high-mid / high bands. Needs audio input enabled via the mic icon in the Hydra UI.
 - Scene S3 (mirage) feeds on `src(o0)` — don't boot straight into it, it needs something to chew on.
 - S8 loads a photo via `s0.initImage(url)`. URL must be CORS-friendly. Wikimedia rate-limits hard — use GitHub raw or a custom host.
+- `a.setScale(fn)` is NOT reactive — Hydra stores the argument verbatim and divides by it, so passing a function makes `a.fft[N]` NaN. Always pass a fixed number. Route fader-driven audio sensitivity through a multiplier at each `a.fft` call site instead.
+- After many re-pastes, hydra.ojack.xyz sometimes stops evaluating reactive arrow functions (visuals render but look static). Hard reload (Cmd-Shift-R), re-grant mic + MIDI sysex, re-enable audio, re-paste. If `osc(() => (time * 10) % 60 + 5, 0.01, 1).out()` doesn't animate, the runtime is stuck — reload.
+- Scene functions are rebuilt on every `sN()` call and replace the previous chain on `o0`. When you edit a scene and re-paste `camel-patch.js`, the OLD chain keeps running on screen until you press that scene's pad again — this is the "zombie scene" trap.
 
 ## LaunchControl XL notes
 
@@ -59,7 +62,7 @@ CCs assume Factory Template 1 defaults. May differ on this unit — verify with 
 Typical loop: edit → paste into Hydra → see result → commit if it's a keeper. No tests, no lint, no CI.
 
 Conventions for new work:
-- Scenes end with `.mult(solid(1,1,1), bright).out(o0)` — the `bright` multiplier is the fader 8 safety.
+- Scenes end with `.mult(solid(bright, bright, bright)).out(o0)` — per-channel multiply by the fader-8 brightness, so 0 = blackout, 1 = unchanged, >1 = overbright.
 - New per-scene knobs follow the column-N convention.
 - New scene functions beyond s8 need the `for (let i = 1; i <= 8; i++)` loop in `led-feedback.js` extended.
 - Keep scene chains under ~10 operations — longer chains get hard to read mid-performance.

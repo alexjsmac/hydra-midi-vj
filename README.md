@@ -16,8 +16,8 @@ Eight camel-themed scenes, audio-reactive to whatever the modular is sending, wi
 For the performance itself, host these files on GitHub raw and load them in one line:
 
 ```js
-await loadScript("https://raw.githubusercontent.com/USER/REPO/main/camel-patch.js")
-await loadScript("https://raw.githubusercontent.com/USER/REPO/main/led-feedback.js")
+await loadScript("https://raw.githubusercontent.com/alexjsmac/juice-jams-camel-show/main/camel-patch.js")
+await loadScript("https://raw.githubusercontent.com/alexjsmac/juice-jams-camel-show/main/led-feedback.js")
 ```
 
 ## Scenes
@@ -52,4 +52,11 @@ Then update the CC numbers in `camel-patch.js` and `led-feedback.js`.
 
 ## See also
 
-`CLAUDE.md` has the fuller architecture notes and conventions.
+- `CLAUDE.md` has the fuller architecture notes and conventions.
+- `cc-map.md` documents the verified CC and pad-note mappings on this LCXL unit.
+
+## License
+
+Released under [Creative Commons Attribution-NonCommercial 4.0 International](LICENSE) (CC BY-NC 4.0).
+
+You're welcome to fork, remix, perform, and share — please credit Alex MacLean and link back. Commercial use is not permitted without explicit permission.

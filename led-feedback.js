@@ -22,7 +22,7 @@
 
 // ---- MIDI output discovery --------------------------------
 lcxl = null
-navigator.requestMIDIAccess().then(access => {
+navigator.requestMIDIAccess({ sysex: true }).then(access => {
   for (let output of access.outputs.values()) {
     if (output.name.includes("Launch Control XL") &&
         !output.name.includes("HUI")) {
@@ -79,11 +79,8 @@ activeScene = 1
 
 lightScene = (n) => {
   activeScene = n
-  const updates = []
-  for (let i = 0; i < 8; i++) {
-    updates.push([SCENE_PADS[i], i === n - 1 ? LED.AMBER_FULL : LED.OFF])
-  }
-  setLEDs(updates)
+  // Full refresh so the utility row comes back after a hush() blackout
+  initLEDs()
 }
 
 initLEDs = () => {
@@ -138,18 +135,30 @@ for (let i = 1; i <= 8; i++) {
 
 // ---- Audio-reactive pulse on the active pad ---------------
 // Only sends MIDI on threshold crossings to keep traffic low.
+// Tune ledPulseThresh live: lower = more sensitive. Call pulseDebug()
+// for a rolling log of a.fft[0] so you can eyeball where to set it.
 ledPulse = true
+ledPulseThresh = 0.3
 lastPulseState = null
 if (window._ledPulseTimer) clearInterval(window._ledPulseTimer)
 window._ledPulseTimer = setInterval(() => {
   if (!ledPulse || !lcxl || !a || !a.fft) return
-  const hot = a.fft[0] > 0.5
+  const hot = a.fft[0] > ledPulseThresh
   if (hot !== lastPulseState) {
     setLED(SCENE_PADS[activeScene - 1],
            hot ? LED.AMBER_FULL : LED.AMBER_LOW)
     lastPulseState = hot
   }
 }, 80)  // ~12 Hz
+
+pulseDebug = (ms = 5000) => {
+  if (window._pulseDebugTimer) clearInterval(window._pulseDebugTimer)
+  const start = Date.now()
+  window._pulseDebugTimer = setInterval(() => {
+    console.log(`fft[0]=${a.fft[0]?.toFixed(3)}  thresh=${ledPulseThresh}`)
+    if (Date.now() - start > ms) clearInterval(window._pulseDebugTimer)
+  }, 250)
+}
 
 
 // ---- Wrap hush() to clear LEDs too ------------------------

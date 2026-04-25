@@ -8,7 +8,7 @@
 //   3. Plug in LaunchControl XL; press top-row pads to switch scenes
 //   4. Tweak knobs + faders for live expression
 //
-// CC bindings assume LCXL Factory Template (channel 8).
+// CC bindings assume LCXL Factory Template 1 (channel 1).
 // Verify yours with console.log in handleMIDI and adjust the
 // numbers in handlePad() + each m() call as needed.
 // ============================================================
@@ -16,7 +16,7 @@
 
 // ---- MIDI SETUP -------------------------------------------
 midi = {}
-navigator.requestMIDIAccess().then(access => {
+navigator.requestMIDIAccess({ sysex: true }).then(access => {
   for (let input of access.inputs.values()) {
     console.log("MIDI input:", input.name)
     input.onmidimessage = ({ data: [status, cc, val] }) => {
@@ -47,17 +47,33 @@ function handlePad(n) {
 // Returns a function so Hydra re-evaluates every frame.
 m = (cc, def = 0.5, scale = 1) => () => (midi[cc] ?? def) * scale
 
+// Live FFT bin meter — call fftDebug() to log all 4 bands for 5s.
+fftDebug = (ms = 5000) => {
+  if (window._fftDebugTimer) clearInterval(window._fftDebugTimer)
+  const start = Date.now()
+  window._fftDebugTimer = setInterval(() => {
+    const row = a.fft.map(v => v?.toFixed(2) ?? '—').join('  ')
+    console.log(`[bass low-mid high-mid high]  ${row}`)
+    if (Date.now() - start > ms) clearInterval(window._fftDebugTimer)
+  }, 200)
+}
+
 
 // ---- AUDIO SETUP ------------------------------------------
+// setScale isn't reactive — passing a function makes a.fft[N] NaN.
+// Keep it fixed; route fader 2 through audio() at fft use sites instead.
 a.setBins(4)
 a.setSmooth(0.85)
-a.setScale(() => 4 + (midi[78] ?? 0.3) * 16)       // fader 2 → reactivity
+a.setScale(4)
 
 
 // ---- GLOBAL FADERS (CC 77–84) -----------------------------
 // 1 speed    2 audio    3 feedback    4 zoom
 // 5 red      6 green    7 blue        8 brightness (safety)
-speed  = m(77, 0.4, 3)
+// NB: `speed` is a Hydra internal global (time multiplier) — do NOT
+// reassign it here or Hydra's render clock breaks. Using `spd` instead.
+spd    = m(77, 0.4, 3)
+audio  = m(78, 0.3, 3)
 feedb  = m(79, 0.3, 1)
 zoom   = m(80, 0.5, 2)
 tintR  = m(81, 0.5, 2)
@@ -85,47 +101,47 @@ s0.initImage("https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/07._Came
 
 // S1 — DUNES: slow warm waves rolling across the horizon
 s1 = () =>
-  osc(speed, 0.03, 1)
+  osc(spd, 0.03, 1)
     .modulate(noise(m(13, 0.5, 3), 0.1))
     .color(1.4, 0.8, 0.3)
     .rotate(0.15, m(49, 0, 0.05))
     .modulateScale(osc(0.2), m(29, 0.3, 0.4))
     .mult(gradient(0).color(tintR, tintG, tintB), 0.6)
-    .mult(solid(1,1,1), bright)
+    .mult(solid(bright, bright, bright))
     .out(o0)
 
 // S2 — CARAVAN: silhouettes moving against heat shimmer
 s2 = () =>
   shape(3, 0.35, 0.02)
-    .repeat(() => 3 + a.fft[1] * 4, 1)
-    .scrollX(() => time * 0.03 * speed())
+    .repeat(() => 3 + a.fft[1] * audio() * 4, 1)
+    .scrollX(() => time * 0.03 * spd())
     .color(0.08, 0.04, 0.02)
     .modulate(noise(m(14, 0.4, 6), m(30, 0.3, 0.5)))
     .add(gradient(0.2).color(1.5, 0.7, 0.2), 0.65)
     .rotate(m(50, 0, 0.15))
-    .mult(solid(1,1,1), bright)
+    .mult(solid(bright, bright, bright))
     .out(o0)
 
 // S3 — MIRAGE: feedback + refraction, self-consuming image
 s3 = () =>
   src(o0)
     .modulate(noise(m(15, 0.5, 6), 0.05), m(31, 0.3, 0.1))
-    .scale(() => 1 + a.fft[2] * 0.06 + feedb() * 0.01)
+    .scale(() => 1 + a.fft[2] * audio() * 0.1 + feedb() * 0.01)
     .blend(osc(8, 0.1, 1).color(1.3, 0.6, 0.3), 0.04)
     .rotate(m(51, 0, 0.02))
-    .mult(solid(1,1,1), bright)
+    .mult(solid(bright, bright, bright))
     .out(o0)
 
 // S4 — EYE: macro camel iris, kaleidoscopic radial
 s4 = () =>
   osc(m(16, 0.4, 100), 0.1, 2)
-    .kaleid(() => 30 + a.fft[0] * 30)
+    .kaleid(() => 4 + a.fft[0] * audio() * 3)
     .modulate(osc(m(32, 0.2, 5)).kaleid(4), 0.1)
     .scale(m(52, 0.3, 3))
     .color(0.9, 0.7, 0.4)
     .mask(shape(100, 0.45, 0.01))
     .add(solid(0.05, 0.03, 0.01), 0.4)
-    .mult(solid(1,1,1), bright)
+    .mult(solid(bright, bright, bright))
     .out(o0)
 
 // S5 — SANDSTORM: chaotic grit, low visibility
@@ -134,9 +150,9 @@ s5 = () =>
     .colorama(0.02)
     .color(1.3, 0.9, 0.5)
     .contrast(m(53, 0.6, 2))
-    .modulate(noise(2).scrollX(() => time * speed() * 0.2))
+    .modulate(noise(2).scrollX(() => time * spd() * 0.2))
     .blend(src(o0), feedb)
-    .mult(solid(1,1,1), bright)
+    .mult(solid(bright, bright, bright))
     .out(o0)
 
 // S6 — OASIS: water reflection, kaleidoscopic mirror
@@ -147,17 +163,17 @@ s6 = () =>
     .color(0.3, 0.8, 0.9)
     .blend(gradient(0.1).color(1.2, 0.9, 0.5), 0.4)
     .modulateScale(osc(0.1), m(54, 0.3, 0.3))
-    .mult(solid(1,1,1), bright)
+    .mult(solid(bright, bright, bright))
     .out(o0)
 
 // S7 — STARS: desert night sky, slow drift
 s7 = () =>
   noise(m(19, 0.4, 200), 0.1)
-    .thresh(() => 0.85 - a.fft[3] * 0.2)
+    .thresh(() => 0.85 - a.fft[3] * audio() * 0.6)
     .color(1, 0.95, 0.8)
     .add(osc(0.5, 0.01, 0.5).color(0.04, 0.04, 0.12))
     .modulate(osc(0.2).rotate(m(55, 0, 0.5)), m(35, 0.2, 0.1))
-    .mult(solid(1,1,1), bright)
+    .mult(solid(bright, bright, bright))
     .out(o0)
 
 // S8 — ARCHIVE: the actual camel photo, treated and reactive
@@ -165,10 +181,10 @@ s8 = () =>
   src(s0)
     .modulate(noise(m(20, 0.3, 6), 0.1), m(36, 0.25, 0.2))
     .scale(m(56, 0.5, 1.8))
-    .colorama(() => 0.01 + a.fft[0] * 0.05)
+    .colorama(() => 0.01 + a.fft[0] * audio() * 0.05)
     .contrast(1.2)
     .blend(src(o0), () => feedb() * 0.5)
-    .mult(solid(1,1,1), bright)
+    .mult(solid(bright, bright, bright))
     .out(o0)
 
 
