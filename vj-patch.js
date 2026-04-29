@@ -79,9 +79,30 @@ fftDebug = (ms = 5000) => {
 // setScale and setSmooth aren't reactive — passing a function makes
 // a.fft[N] NaN. setScale stays fixed; setSmooth is updated from a
 // setInterval that polls fader 6.
-a.setBins(4)
-a.setSmooth(0.85)
-a.setScale(4)
+//
+// The audio init is wrapped in a try/retry: when this script is loaded
+// via loadScript, Hydra's `a` may not yet be fully initialized (or the
+// browser may have served a stale cache). If the call throws, we retry
+// every 500ms until it succeeds — meanwhile the rest of the script
+// (including scene definitions) keeps going.
+initAudio = () => {
+  try {
+    a.setBins(4)
+    a.setSmooth(0.85)
+    a.setScale(4)
+    return true
+  } catch (e) { return false }
+}
+if (window._audioInitRetry) clearInterval(window._audioInitRetry)
+if (!initAudio()) {
+  console.warn('Audio setup deferred — retrying until a.setBins() is available')
+  window._audioInitRetry = setInterval(() => {
+    if (initAudio()) {
+      clearInterval(window._audioInitRetry)
+      console.log('Audio setup completed.')
+    }
+  }, 500)
+}
 
 
 // ---- GLOBAL FADERS (CC 77–84) -----------------------------
