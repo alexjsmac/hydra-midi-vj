@@ -19,7 +19,7 @@ There's no build step. Files are pasted into https://hydra.ojack.xyz in order:
 2. `led-feedback.js` — wraps scene functions to add LED feedback, exposes `setLED` / `LED` constants
 3. `column-recorder.js` — replaces the MIDI input handler with a recording-aware one
 
-Performance loading pattern: host on GitHub raw, then in Hydra run `await loadScript("https://raw.githubusercontent.com/.../vj-patch.js")` — one line per file pulls everything in.
+Performance loading pattern: load via jsDelivr (`https://cdn.jsdelivr.net/gh/USER/REPO@main/file.js`), one `loadScript` line per file. Raw GitHub URLs don't work because GitHub serves JS as `text/plain` with `X-Content-Type-Options: nosniff`, so the browser refuses to execute it. jsDelivr re-serves with `application/javascript`. Image URLs (S8) can stay on raw GitHub since `image/jpeg` doesn't have the same restriction.
 
 ## Architecture
 

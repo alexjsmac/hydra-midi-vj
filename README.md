@@ -12,13 +12,15 @@ A live-coded VJ patch for [Hydra](https://hydra.ojack.xyz) driven by a Novation 
 6. Paste `column-recorder.js`, run it
 7. Press a top-row pad to switch scenes; tweak knobs and faders
 
-For a performance, host these files on GitHub raw and load them in one line each:
+For a performance, load each file via jsDelivr (which mirrors GitHub but serves with the correct `application/javascript` content-type — `loadScript` will fail against raw GitHub URLs because of GitHub's `nosniff` header):
 
 ```js
-await loadScript("https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/vj-patch.js")
-await loadScript("https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/led-feedback.js")
-await loadScript("https://raw.githubusercontent.com/alexjsmac/hydra-midi-vj/main/column-recorder.js")
+await loadScript("https://cdn.jsdelivr.net/gh/alexjsmac/hydra-midi-vj@main/vj-patch.js")
+await loadScript("https://cdn.jsdelivr.net/gh/alexjsmac/hydra-midi-vj@main/led-feedback.js")
+await loadScript("https://cdn.jsdelivr.net/gh/alexjsmac/hydra-midi-vj@main/column-recorder.js")
 ```
+
+jsDelivr caches each file for ~12 hours. To force a fresh fetch after pushing changes, append `?_=<anything-different>` to the URL or pin a specific commit with `@<sha>` instead of `@main`.
 
 ## Scenes
 
