@@ -41,7 +41,7 @@ The LCXL has 8 columns, each with 3 knobs + 1 fader + 2 pads. Convention:
 - **Faders are global**, not scene-specific: speed, audio reactivity, feedback, zoom, R, G, B, brightness (CCs 77–84).
 - **Top row pads** (notes 41–44, 57–60 on channel 1) select scenes.
 - **Bottom row pads** (notes 73–76, 89–92 on channel 1) drive the column recorder — pad N records column N's controls.
-- **Side buttons** (notes 117–120 on channel 1) trigger utilities: fade, freeze, invert, hush.
+- **Side buttons** (notes 105–108 on channel 1) trigger utilities: fade, freeze, invert, hush.
 
 CCs and pad notes verified against Factory Template 1 on this unit (see `cc-map.md`). If you swap the controller or template, re-verify with `midi-learn.js` and update constants in both `vj-patch.js` and `led-feedback.js`.
 

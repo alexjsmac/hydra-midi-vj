@@ -29,20 +29,20 @@ navigator.requestMIDIAccess({ sysex: true }).then(access => {
 // Pad routing
 //   top row pads (41–44, 57–60)  → scene select s1..s8
 //   bottom row pads (73–76, 89–92) → column recorder (handled in column-recorder.js)
-//   side buttons (117–120)        → utilities
+//   side buttons (105–108)        → utilities
 function handlePad(n) {
-  if (n === 41) s1()      // dunes
-  if (n === 42) s2()      // caravan
-  if (n === 43) s3()      // mirage
-  if (n === 44) s4()      // eye
-  if (n === 57) s5()      // sandstorm
-  if (n === 58) s6()      // oasis
+  if (n === 41) s1()      // waves
+  if (n === 42) s2()      // tiles
+  if (n === 43) s3()      // feedback
+  if (n === 44) s4()      // kaleid
+  if (n === 57) s5()      // noise
+  if (n === 58) s6()      // mirror
   if (n === 59) s7()      // stars
-  if (n === 60) s8()      // archive
-  if (n === 117) fade()   // warm solid fade
-  if (n === 118) freeze() // hold current frame
-  if (n === 119) invert() // invert colours
-  if (n === 120) hush()   // kill all output
+  if (n === 60) s8()      // image
+  if (n === 105) fade()   // warm solid fade
+  if (n === 106) freeze() // hold current frame
+  if (n === 107) invert() // invert colours
+  if (n === 108) hush()   // kill all output
 }
 
 // Helper: m(cc, rawDefault 0–1, scale to real range)

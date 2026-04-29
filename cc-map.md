@@ -39,10 +39,10 @@ In the patch:
 
 | Button   | CC      | Note          | Function in patch |
 |----------|---------|---------------|-------------------|
-| 1 (top)  | CC 104  | A6 / **117**  | `fade()`          |
-| 2        | CC 105  | A#6 / **118** | `freeze()`        |
-| 3        | CC 106  | B6 / **119**  | `invert()`        |
-| 4 (bot)  | CC 107  | C7 / **120**  | `hush()`          |
+| 1 (top)  | CC 104  | A6 / **105**  | `fade()`          |
+| 2        | CC 105  | A#6 / **106** | `freeze()`        |
+| 3        | CC 106  | B6 / **107**  | `invert()`        |
+| 4 (bot)  | CC 107  | C7 / **108**  | `hush()`          |
 
 The CC stream from these buttons is unused (we only read Note On).
 
