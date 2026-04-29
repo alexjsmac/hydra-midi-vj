@@ -144,7 +144,7 @@ s1 = () =>
     .repeat(() => Math.sin(time) * 10)
     .modulateRotate(o0)
     .scale(() => Math.sin(time) + 1 * 1.5)
-    .modulate(noise(2, 2))
+    .modulate(noise(2, 2), m(13, 0.5, 1))
     .modulateKaleid(voronoi(() => 2 + a.fft[0] * audio() * 4, 0.1, 0.01), () => Math.sin(time) * 3)
     .rotate(1, m(49, 0, 0.5))
     .colorama(() => 0.02 + a.fft[1] * audio() * 0.04)
@@ -174,9 +174,9 @@ s2 = () =>
       src(o0).shift(0.001, 0.01, 0.001)
         .scrollX([0.05, -0.05].fast(0.1).smooth(1))
         .scale([1.05, 0.9].fast(0.3).smooth(1), [1.05, 0.9, 1].fast(0.29).smooth(1)),
-      0.85
+      m(14, 0.85, 1)
     )
-    .modulate(voronoi(() => 8 + a.fft[1] * audio() * 6, 2, 2))
+    .modulate(voronoi(() => 8 + a.fft[1] * audio() * 6, 2, 2), m(30, 0.5, 1))
     .rotate(m(50, 0, 0.15))
     .mult(solid(bright, bright, bright))
     .out(o0)
@@ -189,7 +189,7 @@ s3 = () =>
     .colorama(() => 0.01 + a.fft[0] * audio() * 0.04)
     .blend(osc(8, 0.1, 1).color(1.3, 0.6, 0.3), 0.04)
     .blend(noise(3, 0.2).color(0.5, 0.3, 0.7), 0.02)
-    .rotate(m(51, 0, 0.02))
+    .rotate(m(51, 0, 0.1))
     .mult(solid(bright, bright, bright))
     .out(o0)
 
