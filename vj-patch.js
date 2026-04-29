@@ -76,26 +76,52 @@ fftDebug = (ms = 5000) => {
 
 
 // ---- AUDIO SETUP ------------------------------------------
-// setScale isn't reactive — passing a function makes a.fft[N] NaN.
-// Keep it fixed; route fader 2 through audio() at fft use sites instead.
+// setScale and setSmooth aren't reactive — passing a function makes
+// a.fft[N] NaN. setScale stays fixed; setSmooth is updated from a
+// setInterval that polls fader 6.
 a.setBins(4)
 a.setSmooth(0.85)
 a.setScale(4)
 
 
 // ---- GLOBAL FADERS (CC 77–84) -----------------------------
-// 1 speed    2 audio    3 feedback    4 zoom
-// 5 red      6 green    7 blue        8 brightness (safety)
-// NB: `speed` is a Hydra internal global (time multiplier) — do NOT
-// reassign it here or Hydra's render clock breaks. Using `spd` instead.
-spd    = m(77, 0.4, 3)
-audio  = m(78, 0.3, 3)
-feedb  = m(79, 0.3, 1)
-zoom   = m(80, 0.5, 2)
-tintR  = m(81, 0.5, 2)
-tintG  = m(82, 0.5, 2)
-tintB  = m(83, 0.5, 2)
-bright = m(84, 0.7, 1.5)
+// Each fader is a universal effect applied to every scene via post().
+// 1 feedback   2 warp        3 noise       4 fracture
+// 5 vignette   6 audio smooth  7 audio gain  8 brightness
+//
+// All effect faders default to 0 (no effect) so untouched faders
+// reproduce each scene's natural character. The audio gain default
+// matches the previous global multiplier so existing reactivity keeps
+// its strength.
+fbAmt     = m(77, 0,    1)     // 0..1   feedback / trail amount
+warpAmt   = m(78, 0,    0.3)   // 0..0.3 noise-modulate distortion
+noiseAmt  = m(79, 0,    0.3)   // 0..0.3 grain overlay
+fracAmt   = m(80, 0,    0.3)   // 0..0.3 kaleidoscopic shatter
+vigAmt    = m(81, 0,    1)     // 0..1   corner vignette
+smoothAmt = m(82, 0.85, 1)     // 0..1   audio smoothing (polled)
+audio     = m(83, 0.3,  3)     // 0..3   global audio reactivity gain
+bright    = m(84, 0.7,  1.5)   // 0..1.5 master brightness
+
+
+// ---- POLLED AUDIO SMOOTHING -------------------------------
+// a.setSmooth() doesn't accept reactive functions, so poll fader 6
+// at 10 Hz and update the smoothing value. Cheap; latency unnoticeable.
+if (window._smoothPollHandle) clearInterval(window._smoothPollHandle)
+window._smoothPollHandle = setInterval(() => a.setSmooth(smoothAmt()), 100)
+
+
+// ---- POST-PROCESSING --------------------------------------
+// Every scene wraps its core chain in post() to layer the universal
+// fader-controlled effects. Order:
+//   warp → fracture → noise grain → feedback → vignette → brightness → out(o0)
+post = (chain) => chain
+  .modulate(noise(2, 0.1), warpAmt)
+  .modulate(osc(8, 0.5).kaleid(8), fracAmt)
+  .add(noise(50, 0.5).color(0.5, 0.5, 0.5), noiseAmt)
+  .blend(src(o0), fbAmt)
+  .mult(shape(50, 0.5, 0.5), vigAmt)
+  .mult(solid(bright, bright, bright))
+  .out(o0)
 
 
 // ---- UTILITIES --------------------------------------------
@@ -137,7 +163,7 @@ useImage(1)
 // ============================================================
 
 // S1 — DRIFT: 20-sided shape with a gentle breathing pulse, voronoi-modulated kaleid driven by bass
-s1 = () =>
+s1 = () => post(
   shape(20, 0.2, 0.3)
     .color(0.5, 0.8, 50)
     .scale(() => 1 + Math.sin(time * 0.3) * 0.08)
@@ -148,12 +174,11 @@ s1 = () =>
     .rotate(1, m(49, 0, 0.5))
     .colorama(() => 0.02 + a.fft[1] * audio() * 0.04)
     .modulate(osc(0.2), m(29, 0.3, 0.4))
-    .mult(gradient(0).color(tintR, tintG, tintB), 0.4)
-    .mult(solid(bright, bright, bright))
-    .out(o0)
+    .mult(gradient(0).color(1.4, 0.8, 0.3), 0.4)
+)
 
 // S2 — PARALLAX: 3 colored shape-dot layers cycling sides + radii, scrolling at 3 sin rates, plus self-feedback added back, voronoi modulate
-s2 = () =>
+s2 = () => post(
   shape([4, 5, 6].fast(0.1).smooth(1), 0.000001, [0.2, 0.7].smooth(1))
     .color(1.2, 0.4, 0.2)
     .scrollX(() => Math.sin(time * 0.27))
@@ -177,23 +202,21 @@ s2 = () =>
     )
     .modulate(voronoi(() => 8 + a.fft[1] * audio() * 6, 2, 2), m(30, 0.5, 1))
     .rotate(m(50, 0, 0.15))
-    .mult(solid(bright, bright, bright))
-    .out(o0)
+)
 
 // S3 — FEEDBACK: self-consuming refraction, with bass-driven hue drift
-s3 = () =>
+s3 = () => post(
   src(o0)
     .modulate(noise(m(15, 0.5, 6), 0.05), m(31, 0.3, 0.1))
-    .scale(() => 1 + a.fft[2] * audio() * 0.1 + feedb() * 0.01)
+    .scale(() => 1 + a.fft[2] * audio() * 0.1)
     .colorama(() => 0.01 + a.fft[0] * audio() * 0.04)
     .blend(osc(8, 0.1, 1).color(1.3, 0.6, 0.3), 0.04)
     .blend(noise(3, 0.2).color(0.5, 0.3, 0.7), 0.02)
     .rotate(m(51, 0, 0.1))
-    .mult(solid(bright, bright, bright))
-    .out(o0)
+)
 
 // S4 — REFRACT: osc.diff(rotated osc), nested rotated-noise modulateScale, src(o0) self-feedback, invert/contrast
-s4 = () =>
+s4 = () => post(
   osc(60, -0.015, 0.3)
     .diff(osc(60, 0.08).rotate(Math.PI / 2))
     .modulateScale(
@@ -209,24 +232,21 @@ s4 = () =>
     .modulateScale(osc(2), -0.2)
     .modulate(osc(m(32, 0.2, 5)).kaleid(() => 4 + a.fft[0] * audio() * 4), 0.05)
     .rotate(m(52, 0, 0.5))
-    .mult(solid(bright, bright, bright))
-    .out(o0)
+)
 
 // S5 — NOISE: chaotic grit, with audio-reactive fine sand on top and a slow warp
-s5 = () =>
+s5 = () => post(
   noise(m(17, 0.4, 20), m(33, 0.15, 2))
     .add(noise(() => 60 + a.fft[1] * audio() * 60, 0.5).color(1.5, 1.1, 0.6), 0.15)
     .colorama(0.02)
     .color(1.3, 0.9, 0.5)
     .contrast(m(53, 0.6, 2))
-    .modulate(noise(2).scrollX(() => time * spd() * 0.2))
+    .modulate(noise(2).scrollX(() => time * 0.2))
     .modulate(osc(0.4, 0.02).rotate(() => time * 0.1), 0.02)
-    .blend(src(o0), feedb)
-    .mult(solid(bright, bright, bright))
-    .out(o0)
+)
 
 // S6 — VORONOI: dense voronoi, stacked thresh + diff(src(o0)) for trails, brightness flicker, color cycling
-s6 = () =>
+s6 = () => post(
   voronoi(() => 200 + a.fft[2] * audio() * 150, 0.15)
     .modulateScale(osc(8).rotate(() => Math.sin(time)), 0.5)
     .thresh(m(34, 0.8, 1))
@@ -239,8 +259,7 @@ s6 = () =>
     .color([0.3, 0.5].smooth(1), [0.7, 0.8].smooth(1), [0.9, 1.0].smooth(1))
     .scale(m(54, 0.5, 1.5))
     .modulate(noise(2, 0.05), m(18, 0.2, 0.3))
-    .mult(solid(bright, bright, bright))
-    .out(o0)
+)
 
 // S7 — GRID: 8x8 rotating shape grid + half-cell shifted self, self-feeding o1 loop, then posterize/saturate/contrast to o0
 // Uses o1 as a feedback buffer (matches the original example's structure — single-buffer self-feedback was hitting shader limits).
@@ -251,20 +270,20 @@ s7 = () => {
     .modulate(src(o1).color(10, 10).add(solid(-14, -14)).rotate(() => time / 40), 0.005)
     .add(src(o1).scrollY(0.012, 0.02), 0.5)
     .out(o1)
-  src(o1)
-    .colorama(() => 1.2 + a.fft[3] * audio() * 0.5)
-    .posterize(4)
-    .saturate(0.7)
-    .contrast(6)
-    .scale(m(55, 0.5, 1.5))
-    .rotate(m(35, 0, 0.5))
-    .modulate(noise(2, 0.02), m(19, 0.1, 0.3))
-    .mult(solid(bright, bright, bright))
-    .out(o0)
+  post(
+    src(o1)
+      .colorama(() => 1.2 + a.fft[3] * audio() * 0.5)
+      .posterize(4)
+      .saturate(0.7)
+      .contrast(6)
+      .scale(m(55, 0.5, 1.5))
+      .rotate(m(35, 0, 0.5))
+      .modulate(noise(2, 0.02), m(19, 0.1, 0.3))
+  )
 }
 
 // S8 — IMAGE: a reference photo from `images`, with kaleid'd warp and a ghosted overlay of itself
-s8 = () =>
+s8 = () => post(
   src(s0)
     .modulate(noise(m(20, 0.3, 6), 0.1), m(36, 0.25, 0.2))
     .scale(m(56, 0.5, 1.8))
@@ -272,9 +291,7 @@ s8 = () =>
     .contrast(1.2)
     .modulate(osc(0.2, 0.02).kaleid(8), 0.02)
     .add(src(s0).kaleid(4).color(0.8, 0.6, 0.9).scrollY(() => time * 0.01), 0.2)
-    .blend(src(o0), () => feedb() * 0.5)
-    .mult(solid(bright, bright, bright))
-    .out(o0)
+)
 
 
 // ---- BOOT -------------------------------------------------

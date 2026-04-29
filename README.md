@@ -40,7 +40,7 @@ The `images` array at the top of `vj-patch.js` is just a list of CORS-friendly U
 - **Top pads (1–8)**: select scene
 - **Bottom pads (1–8)**: column recorders — press and hold to capture fader/knob movements in that column, release to loop. Tap to stop, or touch any recorded control to take it back. Untouched controls in the same column stay freely playable. Hold again while looping to overdub. See [Column recorder](#column-recorder) below.
 - **Side buttons (top→bottom)**: fade / freeze / invert / hush — *momentary*: hold to apply the effect, release returns to the active scene
-- **Faders**: speed, audio amount, feedback, zoom, R, G, B, master brightness
+- **Faders**: feedback, warp, noise grain, fracture, vignette, audio smoothness, audio gain, master brightness — universal post-processing applied to every scene
 - **Knobs (column N)**: per-scene warp / grit / rotation for scene N
 
 ## Column recorder

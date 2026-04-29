@@ -20,7 +20,7 @@ In the patch: column N = scene N. `m(12+N)` = warp, `m(28+N)` = grit, `m(48+N)` 
 |-------|-------|-------|-------|-------|-------|-------|-------|
 | CC 77 | CC 78 | CC 79 | CC 80 | CC 81 | CC 82 | CC 83 | CC 84 |
 
-In the patch: `speed, audio, feedback, zoom, R, G, B, brightness`.
+In the patch: `feedback, warp, noise grain, fracture, vignette, audio smoothness, audio gain, brightness`. Each fader is a universal effect layered on every scene through the `post()` helper.
 
 ## Pads (2 rows × 8)
 

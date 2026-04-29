@@ -25,7 +25,7 @@ Performance loading pattern: load via jsDelivr (`https://cdn.jsdelivr.net/gh/USE
 
 Four layers, loosely coupled:
 
-**Scene layer** (`vj-patch.js`): 8 named functions `s1()`..`s8()` — waves, tiles, feedback, kaleid, noise, mirror, stars, image. Each is a Hydra chain ending in `.out(o0)`. Reactive params are wrapped in `() => ...` so Hydra re-evaluates them per frame.
+**Scene layer** (`vj-patch.js`): 8 named functions `s1()`..`s8()` — drift, parallax, feedback, refract, noise, voronoi, grid, image. Each defines its own core chain and pipes the result through `post()`, which appends the universal fader-driven effects (warp, fracture, noise grain, feedback, vignette, brightness) and finishes with `.out(o0)`. Reactive params are wrapped in `() => ...` so Hydra re-evaluates them per frame.
 
 **MIDI input** (`vj-patch.js`, then replaced by `column-recorder.js`): a single WebMIDI handler routes knob/fader CCs into a global `midi[cc]` map (0–1 normalized) and pad notes into `handlePad()`. Scenes read the map via `m(cc, default, scale)`, which returns a reactive function. `column-recorder.js` replaces the handler with a wider one that also dispatches to recorder hooks (`observeCC`, `recPress`, `recRelease`).
 
@@ -38,7 +38,7 @@ Four layers, loosely coupled:
 The LCXL has 8 columns, each with 3 knobs + 1 fader + 2 pads. Convention:
 
 - **Column N = Scene N.** Scene N reads its per-scene controls from column N's knobs (CCs `12+N`, `28+N`, `48+N` for warp / grit / rotation).
-- **Faders are global**, not scene-specific: speed, audio reactivity, feedback, zoom, R, G, B, brightness (CCs 77–84).
+- **Faders are global universal effects**, not scene-specific: feedback, warp, noise grain, fracture, vignette, audio smoothness, audio gain, brightness (CCs 77–84). Layered on every scene through the `post()` helper in `vj-patch.js`.
 - **Top row pads** (notes 41–44, 57–60 on channel 1) select scenes.
 - **Bottom row pads** (notes 73–76, 89–92 on channel 1) drive the column recorder — pad N records column N's controls.
 - **Side buttons** (notes 105–108 on channel 1) trigger utilities momentarily: hold to apply (fade, freeze, invert, hush), release re-invokes the active scene to restore. Note On goes to `handlePad` in `vj-patch.js`; Note Off goes to `handlePadOff` (also in `vj-patch.js`), routed by `column-recorder.js`'s MIDI handler.
