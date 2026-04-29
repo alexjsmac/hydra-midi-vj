@@ -190,6 +190,13 @@ navigator.requestMIDIAccess({ sysex: true }).then(access => {
         const norm = val / 127
         midi[cc] = norm
         observeCC(cc, norm)
+        // Side buttons (Device/Mute/Solo/Record Arm) emit a CC alongside
+        // their Note. Some LCXL templates don't send Note Off for these
+        // buttons, so we use the CC release (val 0) as a fallback to
+        // trigger handlePadOff for the corresponding note.
+        if (cc >= 104 && cc <= 107 && val === 0) {
+          if (typeof handlePadOff === 'function') handlePadOff(cc + 1)
+        }
       } else if (type === 0x90 && val > 0) {
         // Note On
         if (PAD_TO_COL[cc]) recPress(PAD_TO_COL[cc])

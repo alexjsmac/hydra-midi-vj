@@ -30,7 +30,12 @@ navigator.requestMIDIAccess({ sysex: true }).then(access => {
 //   top row pads (41–44, 57–60)  → scene select s1..s8
 //   bottom row pads (73–76, 89–92) → column recorder (handled in column-recorder.js)
 //   side buttons (105–108)        → momentary utilities (apply on press, release returns to active scene)
-function handlePad(n) {
+//
+// These two are bound as global assignments (not `function name(...)`)
+// because Hydra evals each pasted file in a separate scope; a `function`
+// declaration is local to that eval and isn't reachable from other
+// evals (e.g. the MIDI handler in column-recorder.js).
+handlePad = (n) => {
   if (n === 41) s1()      // drift
   if (n === 42) s2()      // parallax
   if (n === 43) s3()      // feedback
@@ -47,7 +52,7 @@ function handlePad(n) {
 
 // Side-button release → restore the active scene. Called from
 // column-recorder.js's MIDI handler on Note Off events.
-function handlePadOff(n) {
+handlePadOff = (n) => {
   if (n >= 105 && n <= 108) {
     const fn = window['s' + (window.activeScene || 1)]
     if (typeof fn === 'function') fn()
@@ -97,6 +102,17 @@ bright = m(84, 0.7, 1.5)
 fade   = () => solid(0.95, 0.65, 0.25).out(o0)
 freeze = () => src(o0).out(o0)
 invert = () => src(o0).invert().out(o0)
+
+// Override Hydra's built-in hush() — it calls clear() on every source
+// buffer (s0, s1, ...) along with the outputs, which destroys our
+// loaded image so S8 stays black until useImage() is called again.
+// Just blank the output buffers; leave sources alone.
+hush = () => {
+  solid(0, 0, 0, 0).out(o0)
+  solid(0, 0, 0, 0).out(o1)
+  solid(0, 0, 0, 0).out(o2)
+  solid(0, 0, 0, 0).out(o3)
+}
 
 // Reference photos for S8. Hosted from this repo so the URLs are
 // stable and CORS-friendly. Hot-swap mid-performance with `useImage(n)`.

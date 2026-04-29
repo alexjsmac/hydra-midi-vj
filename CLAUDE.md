@@ -76,6 +76,8 @@ Conventions for new work:
 - `voronoi(scale, speed, blur)` is a useful organic-cellular source — works well as a base or as a modulator for a more living feel.
 - Some scenes use `o1` (or `o2`/`o3`) as an intermediate feedback buffer, with the final composite still ending in `.out(o0)` because `render(o0)` is fixed. The intermediate buffers keep updating in the background when other scenes are active — that's fine, just GPU work, no behavioral interference as long as scenes don't fight over the same buffer. If you add a scene that uses `o1`, make sure no existing scene relies on it staying clean.
 - For chains that need self-feedback (`src(oN)` referenced multiple times in one chain), prefer reading from a *different* output buffer than the one being written. Reading and writing `o0` in the same long chain can hit shader sampler/uniform limits and produce a "shader cannot compile" error.
+- **Cross-file globals must be assigned, not `function`-declared.** Hydra evaluates each pasted file in a separate scope; `function name(...)` stays local to that eval and isn't reachable from later evals. Use `name = (...) => {...}` for anything one file defines and another file calls (`handlePad`, `handlePadOff`, `useImage`, etc.).
+- Hydra's built-in `hush()` calls `clear()` on every source buffer (`s0`, `s1`, ...) along with blanking outputs — so it destroys any image you loaded into `s0`. We override it in `vj-patch.js` to clear only outputs.
 
 ## Performance day checklist
 
