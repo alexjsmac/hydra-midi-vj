@@ -136,16 +136,15 @@ useImage(1)
 // So S1 = 13/29/49, S2 = 14/30/50, ... S8 = 20/36/56
 // ============================================================
 
-// S1 — DRIFT: 20-sided shape pulsing on sin(time), self-feedback rotation, voronoi-modulated kaleid
+// S1 — DRIFT: 20-sided shape with a gentle breathing pulse, voronoi-modulated kaleid driven by bass
 s1 = () =>
   shape(20, 0.2, 0.3)
     .color(0.5, 0.8, 50)
-    .scale(() => Math.sin(time) + 1 * 2)
-    .repeat(() => Math.sin(time) * 10)
-    .modulateRotate(o0)
-    .scale(() => Math.sin(time) + 1 * 1.5)
+    .scale(() => 1 + Math.sin(time * 0.3) * 0.08)
+    .repeat(3, 3)
+    .modulateRotate(o0, 0.05)
     .modulate(noise(2, 2), m(13, 0.5, 1))
-    .modulateKaleid(voronoi(() => 2 + a.fft[0] * audio() * 4, 0.1, 0.01), () => Math.sin(time) * 3)
+    .modulateKaleid(voronoi(() => 2 + a.fft[0] * audio() * 4, 0.1, 0.01), 4)
     .rotate(1, m(49, 0, 0.5))
     .colorama(() => 0.02 + a.fft[1] * audio() * 0.04)
     .modulate(osc(0.2), m(29, 0.3, 0.4))
