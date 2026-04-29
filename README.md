@@ -33,7 +33,7 @@ jsDelivr caches each file for ~12 hours. To force a fresh fetch after pushing ch
 7. **Grid** — tiny 8×8 rotating shape grid added to itself shifted by half a cell, color-amplified `src(o0)` self-feedback, then `posterize(4) / saturate / contrast` for a screen-printed look
 8. **Image** — a reference photo from `images`, kaleid-warped with a ghosted rotated overlay of itself
 
-The `images` array at the top of `vj-patch.js` is just a list of CORS-friendly URLs — replace them with anything you want. From the Hydra console, `useImage(n)` (1-indexed) hot-swaps the active image mid-set.
+The `images` array at the top of `vj-patch.js` is just a list of CORS-friendly URLs — replace them with anything you want. Sweep S8's middle knob (CC 36) live to step through them, or call `useImage(n)` (1-indexed) from the Hydra console.
 
 ## Controls
 

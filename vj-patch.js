@@ -174,6 +174,20 @@ images = [
 useImage = (n) => s0.initImage(images[(n - 1) % images.length])
 useImage(1)
 
+// S8's middle knob (CC 36) sweeps through the images array. Poll the
+// CC at 10 Hz; only swap when the resulting index actually changes
+// so we don't hammer s0.initImage on every poll.
+if (window._imageKnobPoll) clearInterval(window._imageKnobPoll)
+window._lastImageIdx = -1
+window._imageKnobPoll = setInterval(() => {
+  const val = midi[36] ?? 0
+  const idx = Math.min(images.length - 1, Math.floor(val * images.length))
+  if (idx !== window._lastImageIdx) {
+    window._lastImageIdx = idx
+    useImage(idx + 1)
+  }
+}, 100)
+
 
 // ============================================================
 // SCENES — each scene N uses column N of the LCXL:
@@ -303,10 +317,11 @@ s7 = () => {
   )
 }
 
-// S8 — IMAGE: a reference photo from `images`, with kaleid'd warp and a ghosted overlay of itself
+// S8 — IMAGE: a reference photo from `images`, with kaleid'd warp and a ghosted overlay of itself.
+// Middle knob (CC 36) steps through the images array — see the poll above.
 s8 = () => post(
   src(s0)
-    .modulate(noise(m(20, 0.3, 6), 0.1), m(36, 0.25, 0.2))
+    .modulate(noise(m(20, 0.3, 6), 0.1), 0.05)
     .scale(m(56, 0.5, 1.8))
     .colorama(() => 0.01 + a.fft[0] * audio() * 0.05)
     .contrast(1.2)
