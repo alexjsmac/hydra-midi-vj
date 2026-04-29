@@ -111,33 +111,47 @@ useImage(1)
 // So S1 = 13/29/49, S2 = 14/30/50, ... S8 = 20/36/56
 // ============================================================
 
-// S1 — WAVES: layered warm waves crossing, with a low audio swell
+// S1 — DRIFT: 20-sided shape pulsing on sin(time), self-feedback rotation, voronoi-modulated kaleid
 s1 = () =>
-  osc(spd, 0.03, 1)
-    .modulate(osc(() => spd() * 0.3, 0.05).rotate(1.5), 0.15)
-    .modulate(noise(m(13, 0.5, 3), 0.1))
-    .add(osc(() => 0.5 + a.fft[0] * audio() * 1.5, 0.02).color(1.5, 0.5, 0.2), 0.25)
-    .color(1.4, 0.8, 0.3)
-    .rotate(0.15, m(49, 0, 0.05))
-    .modulateScale(osc(0.2), m(29, 0.3, 0.4))
-    .mult(gradient(0).color(tintR, tintG, tintB), 0.6)
+  shape(20, 0.2, 0.3)
+    .color(0.5, 0.8, 50)
+    .scale(() => Math.sin(time) + 1 * 2)
+    .repeat(() => Math.sin(time) * 10)
+    .modulateRotate(o0)
+    .scale(() => Math.sin(time) + 1 * 1.5)
+    .modulate(noise(2, 2))
+    .modulateKaleid(voronoi(() => 2 + a.fft[0] * audio() * 4, 0.1, 0.01), () => Math.sin(time) * 3)
+    .rotate(1, m(49, 0, 0.5))
+    .colorama(() => 0.02 + a.fft[1] * audio() * 0.04)
+    .modulate(osc(0.2), m(29, 0.3, 0.4))
+    .mult(gradient(0).color(tintR, tintG, tintB), 0.4)
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S2 — TILES: foreground triangles + faster, smaller parallax row behind them
+// S2 — PARALLAX: 3 colored shape-dot layers cycling sides + radii, scrolling at 3 sin rates, plus self-feedback added back, voronoi modulate
 s2 = () =>
-  shape(3, 0.35, 0.02)
-    .repeat(() => 3 + a.fft[1] * audio() * 4, 1)
-    .scrollX(() => time * 0.03 * spd())
-    .color(0.08, 0.04, 0.02)
+  shape([4, 5, 6].fast(0.1).smooth(1), 0.000001, [0.2, 0.7].smooth(1))
+    .color(1.2, 0.4, 0.2)
+    .scrollX(() => Math.sin(time * 0.27))
     .add(
-      shape(4, 0.18, 0.02).repeat(10, 1)
-        .scrollX(() => time * 0.07 * spd())
-        .color(0.3, 0.15, 0.05),
-      0.5
+      shape([4, 5, 6].fast(0.1).smooth(1), 0.000001, [0.2, 0.7, 0.5, 0.3].smooth(1))
+        .color(1.5, 0.7, 0.3)
+        .scrollY(0.35)
+        .scrollX(() => Math.sin(time * 0.33))
     )
-    .modulate(noise(m(14, 0.4, 6), m(30, 0.3, 0.5)))
-    .add(gradient(0.2).color(1.5, 0.7, 0.2), 0.65)
+    .add(
+      shape([4, 5, 6].fast(0.1).smooth(1), 0.000001, [0.2, 0.7, 0.3].smooth(1))
+        .color(0.8, 0.3, 0.4)
+        .scrollY(-0.35)
+        .scrollX(() => Math.sin(time * 0.41) * -1)
+    )
+    .add(
+      src(o0).shift(0.001, 0.01, 0.001)
+        .scrollX([0.05, -0.05].fast(0.1).smooth(1))
+        .scale([1.05, 0.9].fast(0.3).smooth(1), [1.05, 0.9, 1].fast(0.29).smooth(1)),
+      0.85
+    )
+    .modulate(voronoi(() => 8 + a.fft[1] * audio() * 6, 2, 2))
     .rotate(m(50, 0, 0.15))
     .mult(solid(bright, bright, bright))
     .out(o0)
@@ -154,16 +168,23 @@ s3 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S4 — KALEID: radial kaleidoscope with a colored noise inner pattern
+// S4 — REFRACT: osc.diff(rotated osc), nested rotated-noise modulateScale, src(o0) self-feedback, invert/contrast
 s4 = () =>
-  osc(m(16, 0.4, 100), 0.1, 2)
-    .kaleid(() => 4 + a.fft[0] * audio() * 3)
-    .modulate(osc(m(32, 0.2, 5)).kaleid(4), 0.1)
-    .add(noise(2, 0.1).kaleid(8).color(0.7, 0.4, 0.6), 0.15)
-    .scale(m(52, 0.3, 3))
-    .color(0.9, 0.7, 0.4)
-    .mask(shape(100, 0.45, 0.01))
-    .add(solid(0.05, 0.03, 0.01), 0.4)
+  osc(60, -0.015, 0.3)
+    .diff(osc(60, 0.08).rotate(Math.PI / 2))
+    .modulateScale(
+      noise(3.5, 0.25).modulateScale(osc(15).rotate(() => Math.sin(time / 2))),
+      m(16, 0.6, 1)
+    )
+    .color(1, 0.5, 0.4)
+    .contrast(1.4)
+    .add(src(o0).modulate(o0, 0.04), 0.6)
+    .invert()
+    .brightness(0.1)
+    .contrast(1.2)
+    .modulateScale(osc(2), -0.2)
+    .modulate(osc(m(32, 0.2, 5)).kaleid(() => 4 + a.fft[0] * audio() * 4), 0.05)
+    .rotate(m(52, 0, 0.5))
     .mult(solid(bright, bright, bright))
     .out(o0)
 
@@ -180,30 +201,43 @@ s5 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S6 — MIRROR: cool kaleidoscopic mirror, with mid-band ripple and a fine sparkle
+// S6 — VORONOI: dense voronoi, stacked thresh + diff(src(o0)) for trails, brightness flicker, color cycling
 s6 = () =>
-  osc(m(18, 0.4, 8), 0.05, 1)
-    .kaleid(m(34, 0.3, 12))
-    .modulate(noise(2, 0.1))
-    .modulate(osc(() => 5 + a.fft[2] * audio() * 5, 0.1).kaleid(4), 0.04)
-    .color(0.3, 0.8, 0.9)
-    .blend(gradient(0.1).color(1.2, 0.9, 0.5), 0.4)
-    .modulateScale(osc(0.1), m(54, 0.3, 0.3))
-    .add(noise(40, 0.5).color(0.8, 1, 1), 0.05)
+  voronoi(() => 200 + a.fft[2] * audio() * 150, 0.15)
+    .modulateScale(osc(8).rotate(() => Math.sin(time)), 0.5)
+    .thresh(m(34, 0.8, 1))
+    .modulateRotate(osc(7), 0.4)
+    .thresh(0.7)
+    .diff(src(o0).scale(1.8))
+    .modulateScale(osc(2).modulateRotate(o0, 0.74))
+    .diff(src(o0).rotate([-0.012, 0.01, -0.002, 0]).scrollY(0, [-1/199800, 0].fast(0.7)))
+    .brightness([-0.02, -0.17].smooth().fast(0.5))
+    .color([0.3, 0.5].smooth(1), [0.7, 0.8].smooth(1), [0.9, 1.0].smooth(1))
+    .scale(m(54, 0.5, 1.5))
+    .modulate(noise(2, 0.05), m(18, 0.2, 0.3))
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S7 — STARS: foreground stars + a sparser, cooler distant layer; slow twinkle
-s7 = () =>
-  noise(m(19, 0.4, 200), 0.1)
-    .thresh(() => 0.85 - a.fft[3] * audio() * 0.6)
-    .color(1, 0.95, 0.8)
-    .add(noise(80, 0.05).thresh(0.92).color(0.6, 0.7, 0.9), 0.5)
-    .add(osc(0.5, 0.01, 0.5).color(0.04, 0.04, 0.12))
-    .modulate(osc(0.2).rotate(m(55, 0, 0.5)), m(35, 0.2, 0.1))
-    .modulate(noise(0.5, 0.005), 0.005)
+// S7 — GRID: 8x8 rotating shape grid + half-cell shifted self, self-feeding o1 loop, then posterize/saturate/contrast to o0
+// Uses o1 as a feedback buffer (matches the original example's structure — single-buffer self-feedback was hitting shader limits).
+s7 = () => {
+  const grid = () => shape(4, 0.25, 0.009).rotate(() => time / -40).repeat(8, 8)
+  grid().add(grid().scrollX(0.5 / 8).scrollY(0.5 / 8), 1)
+    .modulate(o1, 0.1)
+    .modulate(src(o1).color(10, 10).add(solid(-14, -14)).rotate(() => time / 40), 0.005)
+    .add(src(o1).scrollY(0.012, 0.02), 0.5)
+    .out(o1)
+  src(o1)
+    .colorama(() => 1.2 + a.fft[3] * audio() * 0.5)
+    .posterize(4)
+    .saturate(0.7)
+    .contrast(6)
+    .scale(m(55, 0.5, 1.5))
+    .rotate(m(35, 0, 0.5))
+    .modulate(noise(2, 0.02), m(19, 0.1, 0.3))
     .mult(solid(bright, bright, bright))
     .out(o0)
+}
 
 // S8 — IMAGE: a reference photo from `images`, with kaleid'd warp and a ghosted overlay of itself
 s8 = () =>

@@ -24,13 +24,13 @@ jsDelivr caches each file for ~12 hours. To force a fresh fetch after pushing ch
 
 ## Scenes
 
-1. **Waves** — warm waves crossing at right angles, with a low audio swell that breathes underneath
-2. **Tiles** — repeating dark shapes against a warm gradient, with a faster, smaller parallax row behind
+1. **Drift** — 20-sided shape pulsing on `Math.sin(time)`, self-feedback rotation through `modulateRotate(o0)`, voronoi-modulated kaleid
+2. **Parallax** — three colored shape-dot layers cycling sides + radii through arrays, scrolling at three different sin rates, with `src(o0)` self-feedback added back at 85%, voronoi modulating the whole thing
 3. **Feedback** — self-consuming refraction with bass-driven hue drift and faint colored noise injection
-4. **Kaleid** — radial kaleidoscope, with a colored noise inner pattern at a different scale
+4. **Refract** — `osc.diff(rotated osc)` base with nested rotated-noise `modulateScale`, `src(o0).modulate(o0)` self-feedback, then invert and contrast for a graphic look
 5. **Noise** — chaotic grit with audio-reactive fine-grain sand layered on top, drifting through a slow warp
-6. **Mirror** — cool kaleidoscopic mirror with a mid-band ripple and a fine sparkle highlight
-7. **Stars** — thresholded noise foreground stars + a sparser, cooler distant layer; gentle twinkle modulation
+6. **Voronoi** — dense voronoi (200+ cells) with stacked `thresh` stages and `diff(src(o0))` for trails; subtle brightness flicker and cool color cycling
+7. **Grid** — tiny 8×8 rotating shape grid added to itself shifted by half a cell, color-amplified `src(o0)` self-feedback, then `posterize(4) / saturate / contrast` for a screen-printed look
 8. **Image** — a reference photo from `images`, kaleid-warped with a ghosted rotated overlay of itself
 
 The `images` array at the top of `vj-patch.js` is just a list of CORS-friendly URLs — replace them with anything you want. From the Hydra console, `useImage(n)` (1-indexed) hot-swaps the active image mid-set.

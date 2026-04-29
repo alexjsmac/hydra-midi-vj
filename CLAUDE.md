@@ -71,7 +71,11 @@ Conventions for new work:
 - Scenes end with `.mult(solid(bright, bright, bright)).out(o0)` — per-channel multiply by the fader-8 brightness, so 0 = blackout, 1 = unchanged, >1 = overbright.
 - New per-scene knobs follow the column-N convention.
 - New scene functions beyond s8 need the `for (let i = 1; i <= 8; i++)` loop in `led-feedback.js` extended.
-- Keep scene chains under ~10 operations — longer chains get hard to read mid-performance.
+- Chain length is bounded by GPU and visual coherence, not by a fixed op count. Hydra runs comfortably into the 20–30 op range; published live-coding examples often go that far. Aim for as many ops as the scene needs to feel right, but every operation should add something visible — drop anything that's noise.
+- For dynamic motion without manual modulation, lean on array-cycling parameters: `[a,b,c].smooth(t).fast(rate)` cycles through values on the global Hydra clock. Most numeric Hydra params accept arrays in this form.
+- `voronoi(scale, speed, blur)` is a useful organic-cellular source — works well as a base or as a modulator for a more living feel.
+- Some scenes use `o1` (or `o2`/`o3`) as an intermediate feedback buffer, with the final composite still ending in `.out(o0)` because `render(o0)` is fixed. The intermediate buffers keep updating in the background when other scenes are active — that's fine, just GPU work, no behavioral interference as long as scenes don't fight over the same buffer. If you add a scene that uses `o1`, make sure no existing scene relies on it staying clean.
+- For chains that need self-feedback (`src(oN)` referenced multiple times in one chain), prefer reading from a *different* output buffer than the one being written. Reading and writing `o0` in the same long chain can hit shader sampler/uniform limits and produce a "shader cannot compile" error.
 
 ## Performance day checklist
 
