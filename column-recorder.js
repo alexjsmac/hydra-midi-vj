@@ -197,6 +197,7 @@ navigator.requestMIDIAccess({ sysex: true }).then(access => {
       } else if (type === 0x80 || (type === 0x90 && val === 0)) {
         // Note Off (either explicit 0x80 or 0x90 with velocity 0)
         if (PAD_TO_COL[cc]) recRelease(PAD_TO_COL[cc])
+        else if (typeof handlePadOff === 'function') handlePadOff(cc)
       }
     }
   }
