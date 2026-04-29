@@ -24,14 +24,14 @@ jsDelivr caches each file for ~12 hours. To force a fresh fetch after pushing ch
 
 ## Scenes
 
-1. **Waves** — slow warm wave pattern
-2. **Tiles** — repeating dark shapes against a warm gradient
-3. **Feedback** — self-consuming refraction
-4. **Kaleid** — radial kaleidoscope, masked to a circle
-5. **Noise** — chaotic grit, drifting
-6. **Mirror** — cool kaleidoscopic mirror
-7. **Stars** — thresholded noise as point particles
-8. **Image** — a reference photo loaded into `s0`, treated and reactive
+1. **Waves** — warm waves crossing at right angles, with a low audio swell that breathes underneath
+2. **Tiles** — repeating dark shapes against a warm gradient, with a faster, smaller parallax row behind
+3. **Feedback** — self-consuming refraction with bass-driven hue drift and faint colored noise injection
+4. **Kaleid** — radial kaleidoscope, with a colored noise inner pattern at a different scale
+5. **Noise** — chaotic grit with audio-reactive fine-grain sand layered on top, drifting through a slow warp
+6. **Mirror** — cool kaleidoscopic mirror with a mid-band ripple and a fine sparkle highlight
+7. **Stars** — thresholded noise foreground stars + a sparser, cooler distant layer; gentle twinkle modulation
+8. **Image** — a reference photo from `images`, kaleid-warped with a ghosted rotated overlay of itself
 
 The `images` array at the top of `vj-patch.js` is just a list of CORS-friendly URLs — replace them with anything you want. From the Hydra console, `useImage(n)` (1-indexed) hot-swaps the active image mid-set.
 

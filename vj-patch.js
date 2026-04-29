@@ -111,10 +111,12 @@ useImage(1)
 // So S1 = 13/29/49, S2 = 14/30/50, ... S8 = 20/36/56
 // ============================================================
 
-// S1 — WAVES: slow warm wave pattern
+// S1 — WAVES: layered warm waves crossing, with a low audio swell
 s1 = () =>
   osc(spd, 0.03, 1)
+    .modulate(osc(() => spd() * 0.3, 0.05).rotate(1.5), 0.15)
     .modulate(noise(m(13, 0.5, 3), 0.1))
+    .add(osc(() => 0.5 + a.fft[0] * audio() * 1.5, 0.02).color(1.5, 0.5, 0.2), 0.25)
     .color(1.4, 0.8, 0.3)
     .rotate(0.15, m(49, 0, 0.05))
     .modulateScale(osc(0.2), m(29, 0.3, 0.4))
@@ -122,33 +124,42 @@ s1 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S2 — TILES: repeating dark shapes against a warm gradient
+// S2 — TILES: foreground triangles + faster, smaller parallax row behind them
 s2 = () =>
   shape(3, 0.35, 0.02)
     .repeat(() => 3 + a.fft[1] * audio() * 4, 1)
     .scrollX(() => time * 0.03 * spd())
     .color(0.08, 0.04, 0.02)
+    .add(
+      shape(4, 0.18, 0.02).repeat(10, 1)
+        .scrollX(() => time * 0.07 * spd())
+        .color(0.3, 0.15, 0.05),
+      0.5
+    )
     .modulate(noise(m(14, 0.4, 6), m(30, 0.3, 0.5)))
     .add(gradient(0.2).color(1.5, 0.7, 0.2), 0.65)
     .rotate(m(50, 0, 0.15))
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S3 — FEEDBACK: self-consuming refraction, feeds on its own output
+// S3 — FEEDBACK: self-consuming refraction, with bass-driven hue drift
 s3 = () =>
   src(o0)
     .modulate(noise(m(15, 0.5, 6), 0.05), m(31, 0.3, 0.1))
     .scale(() => 1 + a.fft[2] * audio() * 0.1 + feedb() * 0.01)
+    .colorama(() => 0.01 + a.fft[0] * audio() * 0.04)
     .blend(osc(8, 0.1, 1).color(1.3, 0.6, 0.3), 0.04)
+    .blend(noise(3, 0.2).color(0.5, 0.3, 0.7), 0.02)
     .rotate(m(51, 0, 0.02))
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S4 — KALEID: radial kaleidoscope, masked to a circle
+// S4 — KALEID: radial kaleidoscope with a colored noise inner pattern
 s4 = () =>
   osc(m(16, 0.4, 100), 0.1, 2)
     .kaleid(() => 4 + a.fft[0] * audio() * 3)
     .modulate(osc(m(32, 0.2, 5)).kaleid(4), 0.1)
+    .add(noise(2, 0.1).kaleid(8).color(0.7, 0.4, 0.6), 0.15)
     .scale(m(52, 0.3, 3))
     .color(0.9, 0.7, 0.4)
     .mask(shape(100, 0.45, 0.01))
@@ -156,45 +167,53 @@ s4 = () =>
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S5 — NOISE: chaotic grit, drifting
+// S5 — NOISE: chaotic grit, with audio-reactive fine sand on top and a slow warp
 s5 = () =>
   noise(m(17, 0.4, 20), m(33, 0.15, 2))
+    .add(noise(() => 60 + a.fft[1] * audio() * 60, 0.5).color(1.5, 1.1, 0.6), 0.15)
     .colorama(0.02)
     .color(1.3, 0.9, 0.5)
     .contrast(m(53, 0.6, 2))
     .modulate(noise(2).scrollX(() => time * spd() * 0.2))
+    .modulate(osc(0.4, 0.02).rotate(() => time * 0.1), 0.02)
     .blend(src(o0), feedb)
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S6 — MIRROR: cool kaleidoscopic mirror
+// S6 — MIRROR: cool kaleidoscopic mirror, with mid-band ripple and a fine sparkle
 s6 = () =>
   osc(m(18, 0.4, 8), 0.05, 1)
     .kaleid(m(34, 0.3, 12))
     .modulate(noise(2, 0.1))
+    .modulate(osc(() => 5 + a.fft[2] * audio() * 5, 0.1).kaleid(4), 0.04)
     .color(0.3, 0.8, 0.9)
     .blend(gradient(0.1).color(1.2, 0.9, 0.5), 0.4)
     .modulateScale(osc(0.1), m(54, 0.3, 0.3))
+    .add(noise(40, 0.5).color(0.8, 1, 1), 0.05)
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S7 — STARS: thresholded noise as point particles, slow drift
+// S7 — STARS: foreground stars + a sparser, cooler distant layer; slow twinkle
 s7 = () =>
   noise(m(19, 0.4, 200), 0.1)
     .thresh(() => 0.85 - a.fft[3] * audio() * 0.6)
     .color(1, 0.95, 0.8)
+    .add(noise(80, 0.05).thresh(0.92).color(0.6, 0.7, 0.9), 0.5)
     .add(osc(0.5, 0.01, 0.5).color(0.04, 0.04, 0.12))
     .modulate(osc(0.2).rotate(m(55, 0, 0.5)), m(35, 0.2, 0.1))
+    .modulate(noise(0.5, 0.005), 0.005)
     .mult(solid(bright, bright, bright))
     .out(o0)
 
-// S8 — IMAGE: a reference photo from `images`, treated and reactive
+// S8 — IMAGE: a reference photo from `images`, with kaleid'd warp and a ghosted overlay of itself
 s8 = () =>
   src(s0)
     .modulate(noise(m(20, 0.3, 6), 0.1), m(36, 0.25, 0.2))
     .scale(m(56, 0.5, 1.8))
     .colorama(() => 0.01 + a.fft[0] * audio() * 0.05)
     .contrast(1.2)
+    .modulate(osc(0.2, 0.02).kaleid(8), 0.02)
+    .add(src(s0).kaleid(4).color(0.8, 0.6, 0.9).scrollY(() => time * 0.01), 0.2)
     .blend(src(o0), () => feedb() * 0.5)
     .mult(solid(bright, bright, bright))
     .out(o0)
